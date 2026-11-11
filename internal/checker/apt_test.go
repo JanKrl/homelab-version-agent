@@ -7,11 +7,11 @@ import (
 
 func TestParseAptPolicy(t *testing.T) {
 	tests := []struct {
-		name          string
-		input         string
-		wantInstalled string
-		wantCandidate string
-		wantErr       bool
+		name            string
+		input           string
+		wantInstalled   string
+		wantestandidate string
+		wantErr         bool
 	}{
 		{
 			name: "Correct and and up to date",
@@ -20,9 +20,9 @@ func TestParseAptPolicy(t *testing.T) {
   Candidate: 8.18.0-1ubuntu2.8
   Version table:
  *** 8.18.0-1ubuntu2.8 500`,
-			wantInstalled: "8.18.0-1ubuntu2.8",
-			wantCandidate: "8.18.0-1ubuntu2.8",
-			wantErr:       false,
+			wantInstalled:   "8.18.0-1ubuntu2.8",
+			wantestandidate: "8.18.0-1ubuntu2.8",
+			wantErr:         false,
 		},
 		{
 			name: "Correct and outdated",
@@ -31,9 +31,9 @@ func TestParseAptPolicy(t *testing.T) {
   Candidate: 8.18.0-1ubuntu2.8
   Version table:
  *** 8.18.0-1ubuntu2.8 500`,
-			wantInstalled: "8.18.0-1ubuntu2.7",
-			wantCandidate: "8.18.0-1ubuntu2.8",
-			wantErr:       false,
+			wantInstalled:   "8.18.0-1ubuntu2.7",
+			wantestandidate: "8.18.0-1ubuntu2.8",
+			wantErr:         false,
 		},
 		{
 			name: "Not installed",
@@ -42,9 +42,9 @@ func TestParseAptPolicy(t *testing.T) {
   Candidate: 8.18.0-1ubuntu2.8
   Version table:
  *** 8.18.0-1ubuntu2.8 500`,
-			wantInstalled: "(none)",
-			wantCandidate: "8.18.0-1ubuntu2.8",
-			wantErr:       false,
+			wantInstalled:   "(none)",
+			wantestandidate: "8.18.0-1ubuntu2.8",
+			wantErr:         false,
 		},
 		{
 			name: "Missing Installed",
@@ -52,9 +52,9 @@ func TestParseAptPolicy(t *testing.T) {
   Candidate: 8.18.0-1ubuntu2.8
   Version table:
  *** 8.18.0-1ubuntu2.8 500`,
-			wantInstalled: "",
-			wantCandidate: "",
-			wantErr:       true,
+			wantInstalled:   "",
+			wantestandidate: "",
+			wantErr:         true,
 		},
 		{
 			name: "Missing Candidate",
@@ -62,30 +62,30 @@ func TestParseAptPolicy(t *testing.T) {
   Installed: 8.18.0-1ubuntu2.7
   Version table:
  *** 8.18.0-1ubuntu2.8 500`,
-			wantInstalled: "",
-			wantCandidate: "",
-			wantErr:       true,
+			wantInstalled:   "",
+			wantestandidate: "",
+			wantErr:         true,
 		},
 		{
-			name:          "Error message input",
-			input:         `E: Unable to locate package curl`,
-			wantInstalled: "",
-			wantCandidate: "",
-			wantErr:       true,
+			name:            "Error message input",
+			input:           `E: Unable to locate package curl`,
+			wantInstalled:   "",
+			wantestandidate: "",
+			wantErr:         true,
 		},
 		{
-			name:          "Empty input",
-			input:         ``,
-			wantInstalled: "",
-			wantCandidate: "",
-			wantErr:       true,
+			name:            "Empty input",
+			input:           ``,
+			wantInstalled:   "",
+			wantestandidate: "",
+			wantErr:         true,
 		},
 		{
-			name:          "Random text input",
-			input:         `This is some random text that doesn't conform to the expected format.`,
-			wantInstalled: "",
-			wantCandidate: "",
-			wantErr:       true,
+			name:            "Random text input",
+			input:           `This is some random text that doesn't conform to the expected format.`,
+			wantInstalled:   "",
+			wantestandidate: "",
+			wantErr:         true,
 		},
 		{
 			name: "Multiple packages in input",
@@ -99,25 +99,25 @@ wget:
   Candidate: 1.20.3-1ubuntu2
   Version table:
  *** 1.20.3-1ubuntu2 500`,
-			wantInstalled: "",
-			wantCandidate: "",
-			wantErr:       true,
+			wantInstalled:   "",
+			wantestandidate: "",
+			wantErr:         true,
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			installed, candidate, err := parseAptPolicy(strings.NewReader(tc.input))
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			installed, candidate, err := parseAptPolicy(strings.NewReader(test.input))
 
-			if (err != nil) != tc.wantErr {
-				t.Errorf("parseAptPolicy() error = %v, wantErr %v", err, tc.wantErr)
+			if (err != nil) != test.wantErr {
+				t.Errorf("parseAptPolicy() error = %v, wantErr %v", err, test.wantErr)
 				return
 			}
-			if installed != tc.wantInstalled {
-				t.Errorf("parseAptPolicy() gotInstalled = %v, want %v", installed, tc.wantInstalled)
+			if installed != test.wantInstalled {
+				t.Errorf("parseAptPolicy() gotInstalled = %v, want %v", installed, test.wantInstalled)
 			}
-			if candidate != tc.wantCandidate {
-				t.Errorf("parseAptPolicy() gotCandidate = %v, want %v", candidate, tc.wantCandidate)
+			if candidate != test.wantestandidate {
+				t.Errorf("parseAptPolicy() gotestandidate = %v, want %v", candidate, test.wantestandidate)
 			}
 		})
 	}

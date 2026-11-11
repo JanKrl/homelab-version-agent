@@ -2,8 +2,12 @@ package checker
 
 import (
 	"bufio"
+	"bytes"
+	"context"
 	"errors"
 	"io"
+	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -11,8 +15,26 @@ type AptChecker struct {
 	packageName string
 }
 
-func (c *AptChecker) Check(r io.Reader) (Result, error) {
-	// TODO
+func (c *AptChecker) Check(ctx context.Context) (Result, error) {
+	cmd := exec.CommandContext(ctx, "apt-cache", "policy", c.packageName)
+	cmd.Env = append(os.Environ(), "LANG=C")
+
+	output, err := cmd.Output()
+	if err != nil {
+		return Result{}, err
+	}
+
+	installed, candidate, err := parseAptPolicy(bytes.NewReader(output))
+	if err != nil {
+		return Result{}, err
+	}
+
+	return Result{
+		Name:       c.packageName,
+		Current:    installed,
+		Latest:     candidate,
+		IsOutdated: installed != candidate,
+	}, nil
 }
 
 func parseAptPolicy(r io.Reader) (installed, candidate string, err error) {
