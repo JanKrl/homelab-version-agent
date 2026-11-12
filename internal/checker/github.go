@@ -21,16 +21,26 @@ type GitHubChecker struct {
 	client *http.Client
 }
 
+func NewGitHubChecker(owner, name string, client *http.Client) *GitHubChecker {
+	if client == nil {
+		client = &http.Client{
+			Timeout: 10 * time.Second,
+		}
+	}
+
+	return &GitHubChecker{
+		owner:  owner,
+		name:   name,
+		client: client,
+	}
+}
+
 type githubApiBody struct {
 	TagName string `json:"tag_name"`
 }
 
 func (c *GitHubChecker) Check(ctx context.Context) (Result, error) {
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	latest, err := getLatestGitHubRelease(ctx, &client, c.owner, c.name, "https://api.github.com")
+	latest, err := getLatestGitHubRelease(ctx, c.client, c.owner, c.name, "https://api.github.com")
 	if err != nil {
 		return Result{}, err
 	}

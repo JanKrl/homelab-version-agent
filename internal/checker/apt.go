@@ -15,6 +15,12 @@ type AptChecker struct {
 	packageName string
 }
 
+func NewAptChecker(packageName string) *AptChecker {
+	return &AptChecker{
+		packageName: packageName,
+	}
+}
+
 func (c *AptChecker) Check(ctx context.Context) (Result, error) {
 	cmd := exec.CommandContext(ctx, "apt-cache", "policy", c.packageName)
 	cmd.Env = append(os.Environ(), "LANG=C")
