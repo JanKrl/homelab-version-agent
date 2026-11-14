@@ -18,10 +18,11 @@ import (
 type GitHubChecker struct {
 	owner  string
 	name   string
+	cmd    string
 	client *http.Client
 }
 
-func NewGitHubChecker(owner, name string, client *http.Client) *GitHubChecker {
+func NewGitHubChecker(owner, name, cmd string, client *http.Client) *GitHubChecker {
 	if client == nil {
 		client = &http.Client{
 			Timeout: 10 * time.Second,
@@ -31,6 +32,7 @@ func NewGitHubChecker(owner, name string, client *http.Client) *GitHubChecker {
 	return &GitHubChecker{
 		owner:  owner,
 		name:   name,
+		cmd:    cmd,
 		client: client,
 	}
 }
