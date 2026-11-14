@@ -1,11 +1,23 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
+
+var validConfigYAML = `mqtt:
+  broker: "test-broker"
+  port: 1883
+  username: "test-user"
+targets:
+  apt_packages:
+    - "package1"
+    - "package2"
+run_interval: 11h`
 
 func TestParse(t *testing.T) {
 	tests := []struct {
@@ -15,16 +27,8 @@ func TestParse(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Valid config",
-			input: `mqtt:
-  broker: "test-broker"
-  port: 1883
-  username: "test-user"
-targets:
-  apt_packages:
-    - "package1"
-    - "package2"
-run_interval: 11h`,
+			name:  "Valid config",
+			input: validConfigYAML,
 			want: &Config{
 				Mqtt: MqttConfig{
 					Broker:   "test-broker",
@@ -137,27 +141,56 @@ func TestLoadEnvs(t *testing.T) {
 }
 
 func TestGetConfig(t *testing.T) {
+	tmpFile := filepath.Join(t.TempDir(), "config.yaml")
+	os.WriteFile(tmpFile, []byte(validConfigYAML), 0644)
+
 	tests := []struct {
 		name    string
 		path    string
+		envs    map[string]string
 		want    *Config
 		wantErr bool
 	}{
 		{
 			name:    "Empty path",
 			path:    ``,
+			envs:    map[string]string{},
 			want:    nil,
 			wantErr: true,
 		},
 		{
 			name:    "Path does not exist",
 			path:    `/non/existent/path`,
+			envs:    map[string]string{},
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Valid config file",
+			path: tmpFile,
+			envs: map[string]string{"MQTT_PASSWORD": "test-password"},
+			want: &Config{
+				Mqtt: MqttConfig{
+					Broker:   "test-broker",
+					Port:     1883,
+					Username: "test-user",
+					Password: "test-password",
+				},
+				Targets: TargetConfig{
+					AptPackages: []string{"package1", "package2"},
+				},
+				RunInterval: 11 * time.Hour,
+			},
+			wantErr: false,
+		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			for key, value := range test.envs {
+				t.Setenv(key, value)
+			}
+
 			got, err := GetConfig(test.path)
 			if (err != nil) != test.wantErr {
 				t.Errorf("GetConfig() error = %v, wantErr %v", err, test.wantErr)
@@ -165,6 +198,12 @@ func TestGetConfig(t *testing.T) {
 			}
 			if !test.wantErr && !reflect.DeepEqual(got, test.want) {
 				t.Errorf("GetConfig() = %v, want %v", got, test.want)
+			}
+
+			for key, value := range test.envs {
+				if os.Getenv(key) != value {
+					t.Errorf("Environment variable %s = %v, want %v", key, os.Getenv(key), value)
+				}
 			}
 		})
 	}
