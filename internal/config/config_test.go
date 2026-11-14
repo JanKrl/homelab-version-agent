@@ -13,6 +13,7 @@ var validConfigYAML = `mqtt:
   broker: "test-broker"
   port: 1883
   username: "test-user"
+  topic: "test-topic"
 targets:
   apt_packages:
     - "package1"
@@ -34,6 +35,7 @@ func TestParse(t *testing.T) {
 					Broker:   "test-broker",
 					Port:     1883,
 					Username: "test-user",
+					Topic:    "test-topic",
 				},
 				Targets: TargetConfig{
 					AptPackages: []string{"package1", "package2"},
@@ -60,6 +62,7 @@ func TestParse(t *testing.T) {
   broker: "test-broker"
   port: 1883
   username: "test-user"
+  topic: "test-topic"
 targets:
   apt_packages:
     - "package1"
@@ -173,6 +176,7 @@ func TestGetConfig(t *testing.T) {
 				Mqtt: MqttConfig{
 					Broker:   "test-broker",
 					Port:     1883,
+					Topic:    "test-topic",
 					Username: "test-user",
 					Password: "test-password",
 				},

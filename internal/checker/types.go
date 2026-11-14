@@ -3,10 +3,10 @@ package checker
 import "context"
 
 type Result struct {
-	Name       string
-	Current    string
-	Latest     string
-	IsOutdated bool
+	Name       string `json:"name"`
+	Current    string `json:"current"`
+	Latest     string `json:"latest"`
+	IsOutdated bool   `json:"is_outdated"`
 }
 
 type Checker interface {

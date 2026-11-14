@@ -45,6 +45,9 @@ func ValidateConfig(cfg *Config) error {
 	if cfg.Mqtt.Port <= 0 {
 		return errors.New("mqtt.port must be greater than 0")
 	}
+	if cfg.Mqtt.Topic == "" {
+		return errors.New("mqtt.topic is empty")
+	}
 	if cfg.Mqtt.Username == "" {
 		return errors.New("mqtt.username is empty")
 	}

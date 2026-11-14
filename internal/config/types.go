@@ -5,6 +5,7 @@ import "time"
 type MqttConfig struct {
 	Broker   string `yaml:"broker"`
 	Port     int    `yaml:"port"`
+	Topic    string `yaml:"topic"`
 	Username string `yaml:"username"`
 	Password string
 }
