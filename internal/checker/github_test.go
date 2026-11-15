@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -127,4 +129,143 @@ func TestGetLatestGitHubRelease(t *testing.T) {
 			t.Errorf("Expected tag 'v1.2.3', got %v", tag)
 		}
 	})
+}
+
+func TestParseCmdVersion(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "Standard --version output",
+			input:   "curl 8.5.0 (x86_64-pc-linux-gnu) libcurl/8.5.0",
+			want:    "8.5.0",
+			wantErr: false,
+		},
+		{
+			name:    "v-prefixed version",
+			input:   "pocket-id version v1.2.3\n",
+			want:    "v1.2.3",
+			wantErr: false,
+		},
+		{
+			name:    "Filebrowser version output",
+			input:   "File Browser v2.31.2/abcdef",
+			want:    "v2.31.2",
+			wantErr: false,
+		},
+		{
+			name:    "No version in output",
+			input:   "unknown output",
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := parseCmdVersion(test.input)
+			if (err != nil) != test.wantErr {
+				t.Errorf("parseCmdVersion() error = %v, wantErr %v", err, test.wantErr)
+				return
+			}
+			if got != test.want {
+				t.Errorf("parseCmdVersion() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestGetCurrentVersion(t *testing.T) {
+	tmpDir := t.TempDir()
+	scriptPath := filepath.Join(tmpDir, "fake-cli")
+	script := `#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "fake-cli v1.2.3"
+  exit 0
+fi
+if [ "$1" = "version" ] && [ "$2" = "--short" ]; then
+  echo "v2.0.1"
+  exit 0
+fi
+if [ "$1" = "version" ]; then
+  echo "fake-cli version v1.2.3"
+  exit 0
+fi
+if [ "$1" = "-V" ]; then
+  echo "fake-cli v3.4.5" >&2
+  exit 0
+fi
+echo "unknown flag: $1" >&2
+exit 1
+`
+	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
+		t.Fatalf("failed to write fake cli script: %v", err)
+	}
+
+	tests := []struct {
+		name    string
+		cmd     string
+		cmdArgs []string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "Standard --version flag",
+			cmd:     scriptPath,
+			cmdArgs: []string{"--version"},
+			want:    "v1.2.3",
+			wantErr: false,
+		},
+		{
+			name:    "Subcommand version",
+			cmd:     scriptPath,
+			cmdArgs: []string{"version"},
+			want:    "v1.2.3",
+			wantErr: false,
+		},
+		{
+			name:    "Multi-arg cmd_args",
+			cmd:     scriptPath,
+			cmdArgs: []string{"version", "--short"},
+			want:    "v2.0.1",
+			wantErr: false,
+		},
+		{
+			name:    "Version printed to stderr",
+			cmd:     scriptPath,
+			cmdArgs: []string{"-V"},
+			want:    "v3.4.5",
+			wantErr: false,
+		},
+		{
+			name:    "Command exits with error",
+			cmd:     scriptPath,
+			cmdArgs: []string{"--invalid"},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "Non-existent command",
+			cmd:     filepath.Join(tmpDir, "does-not-exist"),
+			cmdArgs: []string{"--version"},
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := getCurrentVersion(context.Background(), test.cmd, test.cmdArgs)
+			if (err != nil) != test.wantErr {
+				t.Errorf("getCurrentVersion() error = %v, wantErr %v", err, test.wantErr)
+				return
+			}
+			if got != test.want {
+				t.Errorf("getCurrentVersion() = %v, want %v", got, test.want)
+			}
+		})
+	}
 }

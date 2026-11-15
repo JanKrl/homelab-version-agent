@@ -16,13 +16,14 @@ import (
 )
 
 type GitHubChecker struct {
-	owner  string
-	name   string
-	cmd    string
-	client *http.Client
+	owner   string
+	name    string
+	cmd     string
+	cmdArgs []string
+	client  *http.Client
 }
 
-func NewGitHubChecker(owner, name, cmd string, client *http.Client) *GitHubChecker {
+func NewGitHubChecker(owner, name, cmd string, cmdArgs []string, client *http.Client) *GitHubChecker {
 	if client == nil {
 		client = &http.Client{
 			Timeout: 10 * time.Second,
@@ -30,10 +31,11 @@ func NewGitHubChecker(owner, name, cmd string, client *http.Client) *GitHubCheck
 	}
 
 	return &GitHubChecker{
-		owner:  owner,
-		name:   name,
-		cmd:    cmd,
-		client: client,
+		owner:   owner,
+		name:    name,
+		cmd:     cmd,
+		cmdArgs: cmdArgs,
+		client:  client,
 	}
 }
 
@@ -47,7 +49,7 @@ func (c *GitHubChecker) Check(ctx context.Context) (Result, error) {
 		return Result{}, err
 	}
 
-	current, err := getCurrentVersion(ctx, c.name)
+	current, err := getCurrentVersion(ctx, c.cmd, c.cmdArgs)
 	if err != nil {
 		return Result{}, err
 	}
@@ -60,11 +62,11 @@ func (c *GitHubChecker) Check(ctx context.Context) (Result, error) {
 	}, nil
 }
 
-func getCurrentVersion(ctx context.Context, packageName string) (string, error) {
-	cmd := exec.CommandContext(ctx, packageName, "--version")
-	cmd.Env = append(os.Environ(), "LANG=C")
+func getCurrentVersion(ctx context.Context, cmd string, cmdArgs []string) (string, error) {
+	command := exec.CommandContext(ctx, cmd, cmdArgs...)
+	command.Env = append(os.Environ(), "LANG=C")
 
-	output, err := cmd.Output()
+	output, err := command.CombinedOutput()
 	if err != nil {
 		return "", err
 	}

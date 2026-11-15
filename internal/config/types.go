@@ -11,9 +11,10 @@ type MqttConfig struct {
 }
 
 type GitHubBinaryConfig struct {
-	Owner string `yaml:"owner"`
-	Name  string `yaml:"name"`
-	Cmd   string `yaml:"cmd"`
+	Owner   string   `yaml:"owner"`
+	Name    string   `yaml:"name"`
+	Cmd     string   `yaml:"cmd"`
+	CmdArgs []string `yaml:"cmd_args"`
 }
 
 type TargetConfig struct {

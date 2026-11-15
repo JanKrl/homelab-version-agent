@@ -86,6 +86,121 @@ run_interval: 10h`,
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Valid config with github_binaries",
+			input: `host: "test-host"
+mqtt:
+  broker: "test-broker"
+  port: 1883
+  username: "test-user"
+  topic: "test-topic"
+targets:
+  github_binaries:
+    - owner: "pocket-id"
+      name: "pocket-id"
+      cmd: "pocket-id"
+      cmd_args: ["version"]
+    - owner: "BurntSushi"
+      name: "ripgrep"
+      cmd: "rg"
+      cmd_args: ["--version"]
+run_interval: 11h`,
+			want: &Config{
+				Host: "test-host",
+				Mqtt: MqttConfig{
+					Broker:   "test-broker",
+					Port:     1883,
+					Username: "test-user",
+					Topic:    "test-topic",
+				},
+				Targets: TargetConfig{
+					GitHubRepos: []GitHubBinaryConfig{
+						{
+							Owner:   "pocket-id",
+							Name:    "pocket-id",
+							Cmd:     "pocket-id",
+							CmdArgs: []string{"version"},
+						},
+						{
+							Owner:   "BurntSushi",
+							Name:    "ripgrep",
+							Cmd:     "rg",
+							CmdArgs: []string{"--version"},
+						},
+					},
+				},
+				RunInterval: 11 * time.Hour,
+			},
+			wantErr: false,
+		},
+		{
+			name: "GitHub target missing owner",
+			input: `host: "test-host"
+mqtt:
+  broker: "test-broker"
+  port: 1883
+  username: "test-user"
+  topic: "test-topic"
+targets:
+  github_binaries:
+    - name: "pocket-id"
+      cmd: "pocket-id"
+      cmd_args: ["version"]
+run_interval: 11h`,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "GitHub target missing name",
+			input: `host: "test-host"
+mqtt:
+  broker: "test-broker"
+  port: 1883
+  username: "test-user"
+  topic: "test-topic"
+targets:
+  github_binaries:
+    - owner: "pocket-id"
+      cmd: "pocket-id"
+      cmd_args: ["version"]
+run_interval: 11h`,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "GitHub target missing cmd",
+			input: `host: "test-host"
+mqtt:
+  broker: "test-broker"
+  port: 1883
+  username: "test-user"
+  topic: "test-topic"
+targets:
+  github_binaries:
+    - owner: "pocket-id"
+      name: "pocket-id"
+      cmd_args: ["version"]
+run_interval: 11h`,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "GitHub target missing cmd_args",
+			input: `host: "test-host"
+mqtt:
+  broker: "test-broker"
+  port: 1883
+  username: "test-user"
+  topic: "test-topic"
+targets:
+  github_binaries:
+    - owner: "pocket-id"
+      name: "pocket-id"
+      cmd: "pocket-id"
+run_interval: 11h`,
+			want:    nil,
+			wantErr: true,
+		},
 	}
 
 	for _, test := range tests {

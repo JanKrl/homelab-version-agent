@@ -48,7 +48,7 @@ func main() {
 		checkers = append(checkers, checker.NewAptChecker(target))
 	}
 	for _, target := range cfg.Targets.GitHubRepos {
-		checkers = append(checkers, checker.NewGitHubChecker(target.Owner, target.Name, target.Cmd, httpClient))
+		checkers = append(checkers, checker.NewGitHubChecker(target.Owner, target.Name, target.Cmd, target.CmdArgs, httpClient))
 	}
 
 	pub, err := publisher.NewMqttPublisher(cfg.Mqtt, cfg.Host)
@@ -82,7 +82,7 @@ func runCheck(ctx context.Context, checkers []checker.Checker, pub publisher.Pub
 	for _, checker := range checkers {
 		result, err := checker.Check(ctx)
 		if err != nil {
-			slog.Warn("Unable to check", "checker", checker)
+			slog.Warn("Unable to check", "checker", checker, "error", err)
 			continue
 		}
 		results = append(results, result)

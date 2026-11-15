@@ -61,6 +61,21 @@ func ValidateConfig(cfg *Config) error {
 		return errors.New("run_interval must be greater than 1 hour")
 	}
 
+	for _, gitHubTarget := range cfg.Targets.GitHubRepos {
+		if gitHubTarget.Owner == "" {
+			return errors.New("One or more GitHub targets lacks `owner`")
+		}
+		if gitHubTarget.Name == "" {
+			return errors.New("One or more GitHub targets lacks `name`")
+		}
+		if gitHubTarget.Cmd == "" {
+			return errors.New("One or more GitHub targets lacks `cmd`")
+		}
+		if len(gitHubTarget.CmdArgs) == 0 {
+			return errors.New("One or more GitHub targets lacks `cmd_args`")
+		}
+	}
+
 	return nil
 }
 
