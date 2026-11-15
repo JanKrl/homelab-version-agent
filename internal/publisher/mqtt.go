@@ -17,14 +17,16 @@ const waitTime uint = 250
 type MqttPublisher struct {
 	client mqtt.Client
 	topic  string
+	host   string
 }
 
 type mqttMessage struct {
+	Host string `json:"host"`
 	checker.Result
 	LastCheckedAt string `json:"last_checked_at"`
 }
 
-func NewMqttPublisher(mqttConfig config.MqttConfig) (*MqttPublisher, error) {
+func NewMqttPublisher(mqttConfig config.MqttConfig, host string) (*MqttPublisher, error) {
 	client, err := initialize(mqttConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize MQTT client: %w", err)
@@ -33,6 +35,7 @@ func NewMqttPublisher(mqttConfig config.MqttConfig) (*MqttPublisher, error) {
 	return &MqttPublisher{
 		client: client,
 		topic:  mqttConfig.Topic,
+		host:   host,
 	}, nil
 }
 
@@ -44,8 +47,8 @@ func (p *MqttPublisher) Publish(ctx context.Context, results []checker.Result) e
 	defer p.client.Disconnect(waitTime)
 
 	for _, result := range results {
-		topic := fmt.Sprintf("%s/%s", p.topic, result.Name)
-		payloadBytes, err := constructMessage(result)
+		topic := fmt.Sprintf("%s/%s/%s", p.topic, p.host, result.Name)
+		payloadBytes, err := constructMessage(result, p.host)
 		if err != nil {
 			return err
 		}
@@ -60,8 +63,8 @@ func (p *MqttPublisher) Publish(ctx context.Context, results []checker.Result) e
 	return nil
 }
 
-func constructMessage(result checker.Result) ([]byte, error) {
-	payload := mqttMessage{result, time.Now().Format(time.RFC3339)}
+func constructMessage(result checker.Result, host string) ([]byte, error) {
+	payload := mqttMessage{host, result, time.Now().Format(time.RFC3339)}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err

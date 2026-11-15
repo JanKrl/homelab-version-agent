@@ -22,6 +22,7 @@ type TargetConfig struct {
 }
 
 type Config struct {
+	Host        string        `yaml:"host"`
 	Mqtt        MqttConfig    `yaml:"mqtt"`
 	Targets     TargetConfig  `yaml:"targets"`
 	RunInterval time.Duration `yaml:"run_interval"`

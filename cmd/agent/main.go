@@ -42,7 +42,7 @@ func main() {
 		checkers = append(checkers, checker.NewGitHubChecker(target.Owner, target.Name, target.Cmd, httpClient))
 	}
 
-	pub, err := publisher.NewMqttPublisher(cfg.Mqtt)
+	pub, err := publisher.NewMqttPublisher(cfg.Mqtt, cfg.Host)
 	if err != nil {
 		slog.Error("Unable to initialize MQTT publisher", "error", err)
 		os.Exit(1)
@@ -54,6 +54,7 @@ func main() {
 	ticker := time.NewTicker(cfg.RunInterval)
 	defer ticker.Stop()
 
+	slog.Info("Done. Entering loop mode", "interval", cfg.RunInterval.String())
 	for {
 		select {
 		case <-ctx.Done():
@@ -62,6 +63,7 @@ func main() {
 		case <-ticker.C:
 			slog.Info("Running scheduled check...")
 			runCheck(ctx, checkers, pub)
+			slog.Info("Done!")
 		}
 	}
 }

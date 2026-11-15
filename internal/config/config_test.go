@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-var validConfigYAML = `mqtt:
+var validConfigYAML = `host: "test-host"
+mqtt:
   broker: "test-broker"
   port: 1883
   username: "test-user"
@@ -31,6 +32,7 @@ func TestParse(t *testing.T) {
 			name:  "Valid config",
 			input: validConfigYAML,
 			want: &Config{
+				Host: "test-host",
 				Mqtt: MqttConfig{
 					Broker:   "test-broker",
 					Port:     1883,
@@ -58,7 +60,8 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name: "Too short run_interval",
-			input: `mqtt:
+			input: `host: "test-host"
+mqtt:
   broker: "test-broker"
   port: 1883
   username: "test-user"
@@ -173,6 +176,7 @@ func TestGetConfig(t *testing.T) {
 			path: tmpFile,
 			envs: map[string]string{"MQTT_PASSWORD": "test-password"},
 			want: &Config{
+				Host: "test-host",
 				Mqtt: MqttConfig{
 					Broker:   "test-broker",
 					Port:     1883,

@@ -16,7 +16,7 @@ func TestConstructMessage(t *testing.T) {
 		IsOutdated: true,
 	}
 
-	payloadBytes, err := constructMessage(result)
+	payloadBytes, err := constructMessage(result, "test-host")
 	if err != nil {
 		t.Errorf("Function returned unexpected error: %v", err)
 	}
@@ -26,6 +26,9 @@ func TestConstructMessage(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
+	if data["host"] != "test-host" {
+		t.Errorf("Invalid host, expected 'test-host', got '%v'", data["host"])
+	}
 	if data["name"] != "curl" {
 		t.Errorf("Invalid name, expected 'curl', got '%v'", data["name"])
 		return

@@ -39,6 +39,9 @@ func ValidateConfig(cfg *Config) error {
 	if cfg == nil {
 		return errors.New("config is nil")
 	}
+	if cfg.Host == "" {
+		return errors.New("host is empty")
+	}
 	if cfg.Mqtt.Broker == "" {
 		return errors.New("mqtt.broker is empty")
 	}
@@ -54,8 +57,8 @@ func ValidateConfig(cfg *Config) error {
 	if len(cfg.Targets.AptPackages) == 0 && len(cfg.Targets.GitHubRepos) == 0 {
 		return errors.New("targets must contain at least one apt package or GitHub repo")
 	}
-	if cfg.RunInterval < time.Hour*10 {
-		return errors.New("run_interval must be greater than 10 hours")
+	if cfg.RunInterval < time.Hour*1 {
+		return errors.New("run_interval must be greater than 1 hour")
 	}
 
 	return nil
