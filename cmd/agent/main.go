@@ -56,6 +56,7 @@ func main() {
 		slog.Error("Unable to initialize MQTT publisher", "error", err)
 		os.Exit(1)
 	}
+	defer pub.Close()
 
 	slog.Info("Initialized, checking...")
 	runCheck(ctx, checkers, pub)

@@ -59,6 +59,7 @@ func (c *GitHubChecker) Check(ctx context.Context) (Result, error) {
 		Current:    current,
 		Latest:     latest,
 		IsOutdated: current != latest,
+		ReleaseURL: fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", c.owner, c.name, latest),
 	}, nil
 }
 

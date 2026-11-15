@@ -8,4 +8,5 @@ import (
 
 type Publisher interface {
 	Publish(ctx context.Context, results []checker.Result) error
+	Close()
 }
