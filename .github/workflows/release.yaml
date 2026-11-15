@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 permissions:
   contents: write
@@ -30,10 +35,13 @@ jobs:
       - name: Build static binaries
         run: |
           mkdir -p dist
+          VERSION="${{ inputs.version || github.ref_name }}"
+          echo "Building version: ${VERSION}"
+
           # Linux amd64 (x86_64)
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/homelab-version-agent-linux-amd64 ./cmd/agent
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=${VERSION}" -o dist/homelab-version-agent-linux-amd64 ./cmd/agent
           # Linux arm64 (aarch64) - przydatne dla Raspberry Pi / ARM LXC
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dist/homelab-version-agent-linux-arm64 ./cmd/agent
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w -X main.version=${VERSION}" -o dist/homelab-version-agent-linux-arm64 ./cmd/agent
 
           cd dist
           sha256sum * > checksums.txt
@@ -41,6 +49,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.version || github.ref_name }}
           files: |
             dist/homelab-version-agent-linux-amd64
             dist/homelab-version-agent-linux-arm64

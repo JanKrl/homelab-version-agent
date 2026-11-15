@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -15,12 +16,20 @@ import (
 	"github.com/JanKrl/homelab-version-agent/internal/publisher"
 )
 
+var version = "v0.1.0-dev"
+
 func main() {
+	var configDir = flag.String("config", "/etc/homelab-agent/config.yaml", "Configuration file location")
+	var showVersion = flag.Bool("version", false, "Print version and exit")
+	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("homelab-version-agent %s\n", version)
+		return
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-
-	var configDir = flag.String("config", "/etc/homelab-agent/config.yaml", "Configuration file location")
-	flag.Parse()
 
 	slog.Info("Starting homelab version agent", "config", *configDir)
 
