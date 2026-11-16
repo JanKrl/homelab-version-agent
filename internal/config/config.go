@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GetConfig loads and validates configuration from the YAML file at path and
+// populates secrets from required environment variables.
 func GetConfig(path string) (*Config, error) {
 	if path == "" {
 		return nil, errors.New("path is empty")
@@ -35,6 +37,7 @@ func GetConfig(path string) (*Config, error) {
 	return config, nil
 }
 
+// ValidateConfig checks that all required fields in cfg are present and valid.
 func ValidateConfig(cfg *Config) error {
 	if cfg == nil {
 		return errors.New("config is nil")
@@ -79,6 +82,7 @@ func ValidateConfig(cfg *Config) error {
 	return nil
 }
 
+// Parse decodes YAML configuration from r and validates it.
 func Parse(r io.Reader) (*Config, error) {
 	if r == nil {
 		return nil, errors.New("reader is nil")
@@ -97,10 +101,12 @@ func Parse(r io.Reader) (*Config, error) {
 	return &cfg, nil
 }
 
+// RequiredEnvVars holds configuration values loaded from environment variables.
 type RequiredEnvVars struct {
 	mqttPassword string
 }
 
+// LoadEnvs reads required environment variables, such as MQTT_PASSWORD.
 func LoadEnvs() (RequiredEnvVars, error) {
 	mqttPassword := os.Getenv("MQTT_PASSWORD")
 	if mqttPassword == "" {

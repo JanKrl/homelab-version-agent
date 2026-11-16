@@ -1,3 +1,5 @@
+// Package main implements the homelab-version-agent daemon that checks local
+// software versions and publishes updates to MQTT.
 package main
 
 import (

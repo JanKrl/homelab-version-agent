@@ -11,16 +11,19 @@ import (
 	"strings"
 )
 
+// AptChecker checks installed and candidate versions of an APT package using apt-cache.
 type AptChecker struct {
 	packageName string
 }
 
+// NewAptChecker creates an AptChecker for the given APT package name.
 func NewAptChecker(packageName string) *AptChecker {
 	return &AptChecker{
 		packageName: packageName,
 	}
 }
 
+// Check runs apt-cache policy for the configured package and returns its installed and candidate versions.
 func (c *AptChecker) Check(ctx context.Context) (Result, error) {
 	cmd := exec.CommandContext(ctx, "apt-cache", "policy", c.packageName)
 	cmd.Env = append(os.Environ(), "LANG=C")

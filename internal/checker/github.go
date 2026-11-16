@@ -15,6 +15,7 @@ import (
 	"time"
 )
 
+// GitHubChecker compares a local binary's version against the latest GitHub release.
 type GitHubChecker struct {
 	owner   string
 	name    string
@@ -23,6 +24,8 @@ type GitHubChecker struct {
 	client  *http.Client
 }
 
+// NewGitHubChecker creates a GitHubChecker for the specified repository and local command.
+// If client is nil, a default HTTP client with a 10-second timeout is used.
 func NewGitHubChecker(owner, name, cmd string, cmdArgs []string, client *http.Client) *GitHubChecker {
 	if client == nil {
 		client = &http.Client{
@@ -43,6 +46,7 @@ type githubApiBody struct {
 	TagName string `json:"tag_name"`
 }
 
+// Check fetches the latest GitHub release tag and compares it with the local binary's version.
 func (c *GitHubChecker) Check(ctx context.Context) (Result, error) {
 	latest, err := getLatestGitHubRelease(ctx, c.client, c.owner, c.name, "https://api.github.com")
 	if err != nil {

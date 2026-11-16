@@ -15,6 +15,7 @@ import (
 
 const waitTime uint = 250
 
+// MqttPublisher publishes version check results and Home Assistant MQTT discovery payloads.
 type MqttPublisher struct {
 	client     mqtt.Client
 	topic      string
@@ -49,6 +50,7 @@ type haDiscoveryPayload struct {
 	Device                haDiscoveryDevice `json:"device"`
 }
 
+// NewMqttPublisher connects to the MQTT broker and returns an initialized MqttPublisher.
 func NewMqttPublisher(mqttConfig config.MqttConfig, host string) (*MqttPublisher, error) {
 	client, err := initialize(mqttConfig, host)
 	if err != nil {
@@ -63,6 +65,7 @@ func NewMqttPublisher(mqttConfig config.MqttConfig, host string) (*MqttPublisher
 	}, nil
 }
 
+// Publish sends Home Assistant discovery messages (once per target) and current version states to MQTT.
 func (p *MqttPublisher) Publish(ctx context.Context, results []checker.Result) error {
 	for _, result := range results {
 		if !p.discovered[result.Name] {
@@ -93,6 +96,7 @@ func (p *MqttPublisher) Publish(ctx context.Context, results []checker.Result) e
 	return nil
 }
 
+// Close marks the agent offline and disconnects from the MQTT broker.
 func (p *MqttPublisher) Close() {
 	token := p.client.Publish(availabilityTopic(p.topic, p.host), 1, true, "offline")
 	token.Wait()
